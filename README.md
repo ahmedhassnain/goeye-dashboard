@@ -1,4 +1,4 @@
-# GoEye — Network Analytics Dashboard
+# GoEye - Network Analytics Dashboard
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://goeye-dashboard.vercel.app)
 [![Backend](https://img.shields.io/badge/API-Render-46E3B7?style=for-the-badge&logo=render)](https://goeye-backend.onrender.com)
@@ -8,7 +8,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
-A full-stack **Quality of Service (QoS) analytics platform** built for Go Telecom (Saudi Arabia). GoEye aggregates network measurement data from subscriber-premises units and surfaces it through an interactive analytics dashboard — covering gaming latency, social media responsiveness, video conferencing quality, CDN performance, and DNS reliability across multiple operator scopes.
+A full-stack **Quality of Service (QoS) analytics platform** built for Go Telecom (Saudi Arabia). GoEye aggregates network measurement data from subscriber-premises units and surfaces it through an interactive analytics dashboard which covers gaming latency, social media responsiveness, video conferencing quality, CDN performance, and DNS reliability across multiple operator scopes.
 
 > **Portfolio note:** This public version runs entirely on synthetic seeded data. No SamKnows credentials or real subscriber data are included.
 
@@ -26,16 +26,16 @@ A full-stack **Quality of Service (QoS) analytics platform** built for Go Teleco
 
 ## Features
 
-- **JWT Authentication** — role-based access with 8-hour session tokens; credentials never stored in localStorage
-- **Multi-scope comparison** — side-by-side KPI comparison across operator/technology segments (GO/FTTH, GO/B2B, KSA Average)
-- **Gaming latency tracking** — per-game RTT trends for 28 titles (Valorant, League of Legends, PUBG, and more)
-- **Social media breakdown** — per-platform latency with CDN vs. origin endpoint distinction
-- **Video conferencing quality** — RTT analysis across conferencing platforms
-- **DNS performance** — resolver response-time detail
-- **Disconnection monitoring** — reliability heatmap by hour of day
-- **Date range picker** — load any single date or a custom range from the DB; union with live server dates when pipeline is active
-- **Trend analysis** — 30-day rolling trends per scope
-- **ETL pipeline** — production-ready downloader → extractor → parser → aggregator pipeline (SamKnows-compatible, dormant in demo mode)
+- **JWT Authentication** - role-based access with 8-hour session tokens; credentials never stored in localStorage
+- **Multi-scope comparison** - side-by-side KPI comparison across operator/technology segments (GO/FTTH, GO/B2B, KSA Average)
+- **Gaming latency tracking** - per-game RTT trends for 28 titles (Valorant, League of Legends, PUBG, and more)
+- **Social media breakdown** - per-platform latency with CDN vs. origin endpoint distinction
+- **Video conferencing quality** - RTT analysis across conferencing platforms
+- **DNS performance** - resolver response-time detail
+- **Disconnection monitoring** - reliability heatmap by hour of day
+- **Date range picker** - load any single date or a custom range from the DB; union with live server dates when pipeline is active
+- **Trend analysis** - 30-day rolling trends per scope
+- **ETL pipeline** - production-ready downloader → extractor → parser → aggregator pipeline (SamKnows-compatible, dormant in demo mode)
 
 ---
 
@@ -67,14 +67,14 @@ A full-stack **Quality of Service (QoS) analytics platform** built for Go Teleco
 └──────────────────────┬──────────────────────────────────┘
                        │  SQLAlchemy ORM
 ┌──────────────────────▼──────────────────────────────────┐
-│             PostgreSQL — Neon (cloud)                    │
+│             PostgreSQL - Neon (cloud)                    │
 │  units · scopes · scope_units · applications            │
 │  daily_aggregates · hourly_aggregates                   │
 │  raw_game_latency · raw_social_media                    │
 │  raw_video_conferencing · raw_dns · users               │
 └─────────────────────────────────────────────────────────┘
 
-Optional (production pipeline — not active in demo):
+Optional (production pipeline - not active in demo):
 ┌─────────────────────────────────────────────────────────┐
 │  SamKnows Measurement Server                            │
 │  downloader → extractor → parsers → aggregators         │
@@ -89,7 +89,7 @@ Optional (production pipeline — not active in demo):
 ```
 gonet-dashboard-v1-portfolio/
 ├── api/
-│   └── main.py                  # FastAPI app — all endpoints
+│   └── main.py                  # FastAPI app - all endpoints
 ├── models/                      # SQLAlchemy ORM models
 │   ├── units.py
 │   ├── scopes.py
@@ -148,7 +148,7 @@ git clone https://github.com/YOUR_USERNAME/gonet-dashboard-v1-portfolio.git
 cd gonet-dashboard-v1-portfolio
 
 cp .env.example .env
-# Edit .env — fill in your DB connection details and generate a JWT_SECRET
+# Edit .env - fill in your DB connection details and generate a JWT_SECRET
 ```
 
 Generate a JWT secret:
@@ -173,7 +173,7 @@ python create_user.py
 uvicorn api.main:app --reload --port 8001
 ```
 
-API is available at `http://localhost:8001` — interactive docs at `/docs`.
+API is available at `http://localhost:8001` - interactive docs at `/docs`.
 
 ### 3. Frontend
 
@@ -202,14 +202,14 @@ The stack deploys entirely on free tiers:
 See [`.env.example`](.env.example) for all required environment variables.
 
 **Render environment variables required:**
-- `DATABASE_URL` — Neon connection string
-- `JWT_SECRET` — 32+ character random string
+- `DATABASE_URL` - Neon connection string
+- `JWT_SECRET` - 32+ character random string
 
 **Vercel environment variable required:**
-- `VITE_API_URL` — your Render backend URL
+- `VITE_API_URL` - your Render backend URL
 
 ---
 
 ## License
 
-[MIT](LICENSE) — Ahmed Hassnain, 2026
+[MIT](LICENSE) - Ahmed Hassnain, 2026
