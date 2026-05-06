@@ -1,0 +1,51 @@
+@font-face {
+  font-family: 'Athene Voyage'; /* A name you choose */
+  src: url('./fonts/AtheneVoyage.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; /* Controls font loading behavior */
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:          #EEE8DF;
+  --ink:         #1C1813;
+  --ink-muted:   #9A9088;
+  --ink-faint:   #7A7060;
+  --mustard:     #D4B040;
+  --lavender:    #C2B8DC;
+  --rose:        #E09898;
+  --sage:        #9EBD98;
+  --warm:        #E8DFD0;
+  --gold:        #C8A55A;
+  --red-ed:      #7A1E1E;
+  --green-ed:    #1A4E28;
+  --serif:       'Athene Voyage', serif;
+  --sans:        'Athene Voyage', sans-serif;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+a { text-decoration: none; color: inherit; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #C8C0B4; border-radius: 2px; }

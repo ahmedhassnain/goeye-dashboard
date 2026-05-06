@@ -1,0 +1,14 @@
+.env
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.log
+raw/
+staging/
+node_modules/
+dist/
+*.tar.gz
+*.gz
+.idea/
+Units_Data.csv
