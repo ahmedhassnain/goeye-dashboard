@@ -1,5 +1,5 @@
-# GoEye API image for Hugging Face Spaces (Docker SDK).
-# Spaces run the container as uid 1000 and route traffic to app_port 7860.
+# GoEye API image (deployed on Koyeb; works on any Docker host).
+# Listens on $PORT when the platform sets it, otherwise 7860.
 FROM python:3.13-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -21,4 +21,4 @@ RUN mkdir -p raw staging && chown user:user /app raw staging
 USER user
 
 EXPOSE 7860
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["sh", "-c", "exec uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-7860}"]

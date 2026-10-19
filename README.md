@@ -111,13 +111,12 @@ You'll need Python 3.11+, Node 20+ and a PostgreSQL database (a free
 | Front end | React 19, Vite, Recharts, Axios |
 | Back end | FastAPI, SQLAlchemy 2, JWT sign-in with bcrypt passwords |
 | Data | PostgreSQL on Neon, pandas and NumPy for the pipeline |
-| Hosting | Vercel, Hugging Face Spaces, Cloudflare Workers, GitHub Actions |
+| Hosting | Vercel, Koyeb, Cloudflare Workers, GitHub Actions |
 
 ## Where things live
 
 ```
 api/main.py                 every API endpoint
-app.py                      Hugging Face Space entry point (serves api/main.py on port 7860)
 pipeline/                   download, run and prune the nightly data
 parsers/                    one parser per test type, CSV into raw tables
 aggregations/               raw tables into daily and hourly numbers
@@ -136,14 +135,14 @@ Everything runs on free tiers. Each service needs these settings:
 | Service | Settings |
 |---|---|
 | Neon (database) | Nothing beyond creating the project; copy its connection string |
-| Hugging Face Spaces (API) | Gradio Space on free CPU Basic, running [app.py](app.py). Secrets: `DATABASE_URL`, `JWT_SECRET`, `RAW_RETENTION_DAYS`, and `SAMKNOWS_URL`, `SAMKNOWS_USER`, `SAMKNOWS_PASS` to load server dates from the dashboard. Steps in [docs/deploy-hf-spaces.md](docs/deploy-hf-spaces.md) |
-| Vercel (front end) | `VITE_API_URL`, pointing at the API's Space URL; redeploy after changing it |
-| GitHub Actions (keep-alive) | Repository variable `BACKEND_URL`; [keep-alive.yml](.github/workflows/keep-alive.yml) pings `/docs` every 12 hours so the Space never reaches its 48-hour sleep |
+| Koyeb (API) | Free web service built from the [Dockerfile](Dockerfile), port 7860. Variables: `DATABASE_URL`, `JWT_SECRET`, `RAW_RETENTION_DAYS`, and `SAMKNOWS_URL`, `SAMKNOWS_USER`, `SAMKNOWS_PASS` to load server dates from the dashboard. Steps in [docs/deploy-koyeb.md](docs/deploy-koyeb.md) |
+| Vercel (front end) | `VITE_API_URL`, pointing at the API's Koyeb URL; redeploy after changing it |
+| GitHub Actions (keep-alive) | Repository variable `BACKEND_URL`; [keep-alive.yml](.github/workflows/keep-alive.yml) pings `/docs` every 20 minutes so the free instance never reaches its 1-hour sleep |
 | GitHub Actions (nightly data) | See [samknows_sim/README.md](samknows_sim/README.md#one-time-cloud-setup-free-tier-no-card-needed) |
 
 [`.env.example`](.env.example) lists every variable with a short note.
 
-Render still works as a fallback for the API, using the `Procfile` and the same variables. Its free tier sleeps after 15 minutes, so point `BACKEND_URL` at it and ping every 10 minutes; see [the fallback notes](docs/deploy-hf-spaces.md#fallback-render).
+Render still works as a fallback for the API, using the `Procfile` and the same variables. Its free tier sleeps after 15 minutes, so point `BACKEND_URL` at it and ping every 10 minutes; see [the fallback notes](docs/deploy-koyeb.md#fallback-render).
 
 ## License
 

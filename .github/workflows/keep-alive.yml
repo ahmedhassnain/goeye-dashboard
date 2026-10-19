@@ -1,13 +1,13 @@
 name: Keep API awake
 
-# Hugging Face Spaces (free CPU Basic) sleeps after ~48h without traffic.
-# Pinging every 12h keeps it awake. Set the BACKEND_URL repository variable
-# (Settings > Secrets and variables > Actions > Variables), for example
-# https://<user>-<space>.hf.space. The same job keeps a Render fallback warm-ish.
+# Koyeb's free instance scales to zero after 1h without traffic. Pinging every
+# 20 minutes keeps it awake even when GitHub runs the schedule late. Set the
+# BACKEND_URL repository variable (Settings > Secrets and variables > Actions >
+# Variables) to the service URL, e.g. https://<service>-<org>.koyeb.app.
 
 on:
   schedule:
-    - cron: "17 */12 * * *"
+    - cron: "*/20 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -25,7 +25,7 @@ jobs:
           fi
           url="${BACKEND_URL%/}/docs"
           echo "Pinging $url"
-          # A sleeping Space can take a while to wake, so retry generously.
+          # A sleeping service can take a moment to wake, so retry.
           curl --fail --silent --show-error --output /dev/null \
                --retry 5 --retry-delay 20 --retry-all-errors --max-time 120 \
                --write-out "HTTP %{http_code} in %{time_total}s\n" "$url"
