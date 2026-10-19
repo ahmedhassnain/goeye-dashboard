@@ -10,6 +10,7 @@ from datetime import datetime
 from pathlib import Path
 
 from pipeline.downloader import download_latest, download_specific_date
+from pipeline.prune import prune_raw_data
 from parsers.game_latency_parser import load_game_latency
 from parsers.disconnection_parser import load_disconnection
 from parsers.social_media_parser import load_social_media
@@ -128,7 +129,7 @@ def run_pipeline(days=1, reprocess=False, specific_date=None):
         result = download_specific_date(specific_date)
         if not result:
             log.error(f"Could not download archive for {specific_date}")
-            return
+            return False
         results = [result]
     else:
         results = download_latest()
@@ -137,7 +138,7 @@ def run_pipeline(days=1, reprocess=False, specific_date=None):
 
     if not results:
         log.info("No archives to process.")
-        return
+        return True
 
     success_count = 0
     fail_count    = 0
@@ -149,11 +150,14 @@ def run_pipeline(days=1, reprocess=False, specific_date=None):
         else:
             fail_count += 1
 
+    prune_raw_data()
+
     elapsed = (datetime.now() - start_time).total_seconds()
     log.info(f"{'='*50}")
     log.info(f"Pipeline finished in {elapsed:.1f}s")
     log.info(f"  Successful: {success_count}")
     log.info(f"  Failed:     {fail_count}")
+    return fail_count == 0
 
 
 if __name__ == "__main__":
@@ -163,8 +167,9 @@ if __name__ == "__main__":
     parser.add_argument('--reprocess', action='store_true',      help='Clear and reprocess existing data')
     args = parser.parse_args()
 
-    run_pipeline(
+    ok = run_pipeline(
         days=args.days,
         reprocess=args.reprocess,
         specific_date=args.date,
     )
+    sys.exit(0 if ok else 1)
