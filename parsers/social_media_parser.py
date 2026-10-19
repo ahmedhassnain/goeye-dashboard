@@ -75,11 +75,12 @@ def load_social_media(deltadata_path):
                 direction=row.get("direction", "").strip() or None,
                 target=row.get("target", "").strip() or None,
                 address=row.get("address", "").strip() or None,
-                rtt_avg=rtt_avg_raw / 1000 if rtt_avg_raw is not None else None,
-                rtt_min=rtt_min_raw / 1000 if rtt_min_raw is not None else None,
-                rtt_max=rtt_max_raw / 1000 if rtt_max_raw is not None else None,
-                rtt_median=rtt_median_raw / 1000 if rtt_median_raw is not None else None,
-                rtt_std=rtt_std_raw / 1000 if rtt_std_raw is not None else None,
+                # Stored in microseconds like game latency; the API converts to ms.
+                rtt_avg=rtt_avg_raw,
+                rtt_min=rtt_min_raw,
+                rtt_max=rtt_max_raw,
+                rtt_median=rtt_median_raw,
+                rtt_std=rtt_std_raw,
                 successes=parse_int(row.get("successes")),
                 failures=parse_int(row.get("failures")),
             )
@@ -96,6 +97,7 @@ def load_social_media(deltadata_path):
     except Exception as e:
         session.rollback()
         print(f"  Error loading social media: {e}")
+        raise
     finally:
         session.close()
 

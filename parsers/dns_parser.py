@@ -105,6 +105,7 @@ def load_dns(deltadata_path):
     except Exception as e:
         session.rollback()
         print(f"  Error loading DNS: {e}")
+        raise
     finally:
         session.close()
 

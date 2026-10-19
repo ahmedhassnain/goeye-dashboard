@@ -89,6 +89,7 @@ def load_disconnection(deltadata_path):
     except Exception as e:
         session.rollback()
         print(f"  Error loading disconnections: {e}")
+        raise
     finally:
         session.close()
 

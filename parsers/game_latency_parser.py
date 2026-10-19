@@ -142,6 +142,7 @@ def load_game_latency(deltadata_path):
     except Exception as e:
         session.rollback()
         print(f"Error loading game latency: {e}")
+        raise
     finally:
         session.close()
 
