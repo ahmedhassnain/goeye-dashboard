@@ -1,0 +1,124 @@
+# Daily synthetic SamKnows drop + ingest.
+#
+# 1. publish: generates yesterday's (KSA) synthetic archive and uploads it to
+#    the Workers KV namespace behind the simulated SamKnows server (samknows_sim/worker).
+# 2. ingest:  runs the real pipeline against that server URL, exactly as it
+#    would against SamKnows: list -> download (Basic auth) -> extract ->
+#    parse -> aggregate -> prune raw rows past RAW_RETENTION_DAYS.
+#
+# Required repository secrets:
+#   CLOUDFLARE_API_TOKEN   token with "Workers KV Storage: Edit"
+#   CLOUDFLARE_ACCOUNT_ID
+#   SAMKNOWS_URL           e.g. https://goeye-samknows.<subdomain>.workers.dev/
+#   SAMKNOWS_USER / SAMKNOWS_PASS   same values as the Worker secrets
+#   DATABASE_URL           Neon connection string
+#
+# Manual runs (Actions tab -> Run workflow) can backfill: set "days" to 30 to
+# publish and ingest the 30 days ending on "date".
+
+name: SamKnows daily drop
+
+on:
+  schedule:
+    - cron: "30 0 * * *"   # 00:30 UTC = 03:30 KSA, after the KSA day has closed
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Last archive date (YYYY-MM-DD). Default: yesterday in KSA time."
+        required: false
+      days:
+        description: "Number of days ending on that date"
+        required: false
+        default: "1"
+
+concurrency:
+  group: samknows-daily
+  cancel-in-progress: false
+
+env:
+  ARCHIVE_TTL_SECONDS: "10368000"   # archives expire from the server after 120 days
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    outputs:
+      dates: ${{ steps.dates.outputs.dates }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Resolve dates
+        id: dates
+        env:
+          INPUT_DATE: ${{ inputs.date }}
+          INPUT_DAYS: ${{ inputs.days || '1' }}
+        run: |
+          dates=$(python - <<'EOF'
+          import os
+          from datetime import date, datetime, timedelta, timezone
+          last = os.environ["INPUT_DATE"].strip()
+          last = date.fromisoformat(last) if last else (datetime.now(timezone.utc) + timedelta(hours=3)).date() - timedelta(days=1)
+          days = int(os.environ["INPUT_DAYS"] or 1)
+          print(" ".join((last - timedelta(days=i)).strftime("%Y%m%d") for i in range(days - 1, -1, -1)))
+          EOF
+          )
+          echo "dates=$dates" >> "$GITHUB_OUTPUT"
+          echo "Dates: $dates"
+
+      - name: Generate archives
+        run: |
+          for d in ${{ steps.dates.outputs.dates }}; do
+            python samknows_sim/generate_archive.py --date "${d:0:4}-${d:4:2}-${d:6:2}" --out samknows_sim/archives
+          done
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Upload to Workers KV
+        working-directory: samknows_sim/worker   # wrangler.toml defines the ARCHIVES binding
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          for f in ../archives/*.tar.gz; do
+            meta=$(printf '{"size":%d,"uploaded":"%s"}' "$(stat -c %s "$f")" "$(date -u +%Y-%m-%dT%H:%M:%SZ)")
+            npx --yes wrangler@4 kv key put "$(basename "$f")" --path "$f" \
+              --binding ARCHIVES --metadata "$meta" --ttl "$ARCHIVE_TTL_SECONDS" --remote
+          done
+
+  ingest:
+    needs: publish
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SAMKNOWS_URL: ${{ secrets.SAMKNOWS_URL }}
+      SAMKNOWS_USER: ${{ secrets.SAMKNOWS_USER }}
+      SAMKNOWS_PASS: ${{ secrets.SAMKNOWS_PASS }}
+      RAW_RETENTION_DAYS: "90"
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # KV is eventually consistent: a just-uploaded archive can take up to a
+      # minute to appear in the server listing, so retry before failing.
+      - name: Run pipeline
+        run: |
+          for d in ${{ needs.publish.outputs.dates }}; do
+            for attempt in 1 2 3 4; do
+              python pipeline/run_pipeline.py --date "$d" && break
+              [ "$attempt" = 4 ] && exit 1
+              echo "Attempt $attempt for $d failed; retrying in 30s"
+              sleep 30
+            done
+          done

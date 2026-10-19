@@ -12,3 +12,8 @@ dist/
 *.gz
 .idea/
 Units_Data.csv
+
+# Synthetic SamKnows feed
+samknows_sim/archives/
+.dev.vars
+.wrangler/
