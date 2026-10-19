@@ -22,7 +22,7 @@ export default function Dashboard({ section, user }) {
   const [rangeEnd, setRangeEnd]             = useState(null)
   const [rangeDaily, setRangeDaily]         = useState(null)
   const [rangeError, setRangeError]         = useState(null)
-  const [rangeStatuses, setRangeStatuses]   = useState({})
+  const [, setRangeStatuses]                = useState({})
   const [rangeLoading, setRangeLoading]     = useState(false)
   const [selectedPreset, setSelectedPreset] = useState(null)
   const [heatmaps, setHeatmaps]             = useState({})
@@ -138,16 +138,6 @@ useEffect(() => {
   }
 
   const rangeDates = getDateRange(rangeStart, rangeEnd)
-  const rangeDoneCount = Object.values(rangeStatuses).filter(s => s === 'done').length
-  const rangePendingCount = Object.values(rangeStatuses).filter(s => s === 'processing').length
-
-  const rangeProgressMessage = () => {
-    if (!rangeMode || rangeDates.length === 0) return ''
-    if (loadingDate) return loadProgress || 'Loading selected range...'
-    if (rangeDaily) return `Selected range loaded: ${rangeDaily.start_date} to ${rangeDaily.end_date}`
-    if (rangePendingCount > 0 || rangeDoneCount > 0) return 'Preparing selected date range...'
-    return 'Select a date range and click Apply.'
-  }
 
   async function startRangeLoad(dates) {
     if (dates.length === 0) return
@@ -230,7 +220,7 @@ useEffect(() => {
 
     // Check for any errors in final statuses
     const errorDates = Object.entries(statuses)
-      .filter(([_, status]) => status?.startsWith('error'))
+      .filter(([, status]) => status?.startsWith('error'))
       .map(([date]) => date)
     
     if (errorDates.length > 0) {
