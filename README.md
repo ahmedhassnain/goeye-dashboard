@@ -111,12 +111,13 @@ You'll need Python 3.11+, Node 20+ and a PostgreSQL database (a free
 | Front end | React 19, Vite, Recharts, Axios |
 | Back end | FastAPI, SQLAlchemy 2, JWT sign-in with bcrypt passwords |
 | Data | PostgreSQL on Neon, pandas and NumPy for the pipeline |
-| Hosting | Vercel, Hugging Face Spaces (Docker), Cloudflare Workers, GitHub Actions |
+| Hosting | Vercel, Hugging Face Spaces, Cloudflare Workers, GitHub Actions |
 
 ## Where things live
 
 ```
 api/main.py                 every API endpoint
+app.py                      Hugging Face Space entry point (serves api/main.py on port 7860)
 pipeline/                   download, run and prune the nightly data
 parsers/                    one parser per test type, CSV into raw tables
 aggregations/               raw tables into daily and hourly numbers
@@ -135,7 +136,7 @@ Everything runs on free tiers. Each service needs these settings:
 | Service | Settings |
 |---|---|
 | Neon (database) | Nothing beyond creating the project; copy its connection string |
-| Hugging Face Spaces (API) | Docker Space on free CPU Basic. Secrets: `DATABASE_URL`, `JWT_SECRET`, `RAW_RETENTION_DAYS`, and `SAMKNOWS_URL`, `SAMKNOWS_USER`, `SAMKNOWS_PASS` to load server dates from the dashboard. Steps in [docs/deploy-hf-spaces.md](docs/deploy-hf-spaces.md) |
+| Hugging Face Spaces (API) | Gradio Space on free CPU Basic, running [app.py](app.py). Secrets: `DATABASE_URL`, `JWT_SECRET`, `RAW_RETENTION_DAYS`, and `SAMKNOWS_URL`, `SAMKNOWS_USER`, `SAMKNOWS_PASS` to load server dates from the dashboard. Steps in [docs/deploy-hf-spaces.md](docs/deploy-hf-spaces.md) |
 | Vercel (front end) | `VITE_API_URL`, pointing at the API's Space URL; redeploy after changing it |
 | GitHub Actions (keep-alive) | Repository variable `BACKEND_URL`; [keep-alive.yml](.github/workflows/keep-alive.yml) pings `/docs` every 12 hours so the Space never reaches its 48-hour sleep |
 | GitHub Actions (nightly data) | See [samknows_sim/README.md](samknows_sim/README.md#one-time-cloud-setup-free-tier-no-card-needed) |
