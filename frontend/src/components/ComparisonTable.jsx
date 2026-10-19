@@ -63,7 +63,7 @@ export default function ComparisonTable({ data }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, i) => {
+          {rows.map((row) => {
             const status = getStatus(row.go, row.ksa, row.higher)
             return (
               <tr key={row.label} style={{ 

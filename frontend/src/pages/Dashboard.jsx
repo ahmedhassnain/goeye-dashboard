@@ -8,7 +8,20 @@ import InsightsPanel from '../components/InsightsPanel'
 import { getGamingBreakdown, getSocialBreakdown, getVideoBreakdown, getDnsDetail, getTrends } from '../api/client'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 
-export default function Dashboard({ section, user }) {
+// Charts take margins as props, which CSS can't reach; this lets them tighten up on phones.
+function useIsNarrow(maxWidth = 640) {
+  const query = `(max-width: ${maxWidth}px)`
+  const [narrow, setNarrow] = useState(() => window.matchMedia(query).matches)
+  useEffect(() => {
+    const mq = window.matchMedia(query)
+    const onChange = e => setNarrow(e.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [query])
+  return narrow
+}
+
+export default function Dashboard({ section, user, onMenu }) {
   const [availableDates, setAvailableDates] = useState([])
   const [loadedDates, setLoadedDates]       = useState(new Set())
   const [selectedDate, setSelectedDate]     = useState(null)
@@ -22,7 +35,7 @@ export default function Dashboard({ section, user }) {
   const [rangeEnd, setRangeEnd]             = useState(null)
   const [rangeDaily, setRangeDaily]         = useState(null)
   const [rangeError, setRangeError]         = useState(null)
-  const [rangeStatuses, setRangeStatuses]   = useState({})
+  const [, setRangeStatuses]                = useState({})
   const [rangeLoading, setRangeLoading]     = useState(false)
   const [selectedPreset, setSelectedPreset] = useState(null)
   const [heatmaps, setHeatmaps]             = useState({})
@@ -138,16 +151,6 @@ useEffect(() => {
   }
 
   const rangeDates = getDateRange(rangeStart, rangeEnd)
-  const rangeDoneCount = Object.values(rangeStatuses).filter(s => s === 'done').length
-  const rangePendingCount = Object.values(rangeStatuses).filter(s => s === 'processing').length
-
-  const rangeProgressMessage = () => {
-    if (!rangeMode || rangeDates.length === 0) return ''
-    if (loadingDate) return loadProgress || 'Loading selected range...'
-    if (rangeDaily) return `Selected range loaded: ${rangeDaily.start_date} to ${rangeDaily.end_date}`
-    if (rangePendingCount > 0 || rangeDoneCount > 0) return 'Preparing selected date range...'
-    return 'Select a date range and click Apply.'
-  }
 
   async function startRangeLoad(dates) {
     if (dates.length === 0) return
@@ -230,7 +233,7 @@ useEffect(() => {
 
     // Check for any errors in final statuses
     const errorDates = Object.entries(statuses)
-      .filter(([_, status]) => status?.startsWith('error'))
+      .filter(([, status]) => status?.startsWith('error'))
       .map(([date]) => date)
     
     if (errorDates.length > 0) {
@@ -509,13 +512,13 @@ async function fetchData(date) {
 return (
   <div style={s.page}>
     {/* The Sticky Wrapper: Keep it transparent so it doesn't look like a block */}
-    <div style={{
+    <div className="ge-topbar-wrap" style={{
       position: 'sticky',
       top: 0,
       zIndex: 100,
       padding: '16px 0', // Provides space for the pill to "float"
     }}>
-      <div style={{
+      <div className="ge-topbar" style={{
         ...s.topbar,
         pointerEvents: 'auto', // Re-enable clicks for the actual bar
         // Dynamic animation properties
@@ -535,8 +538,11 @@ return (
           ? 'rgba(245, 240, 232, 0.85)' 
           : 'rgba(238, 232, 223, 1)',
       }}>
-        <div style={s.topbarTitle}>{sectionTitle[section] || 'Network Overview'}</div>
-        <div style={s.topbarRight}>
+        <div className="ge-topbar-title" style={s.topbarTitle}>
+          <button type="button" className="ge-menu-btn" onClick={onMenu} aria-label="Open navigation">Menu</button>
+          {sectionTitle[section] || 'Network Overview'}
+        </div>
+        <div className="ge-topbar-right" style={s.topbarRight}>
           <div style={s.rangePanelTop}>
             <button
               style={rangeMode ? s.rangeToggleInactive : s.rangeToggleActive}
@@ -586,7 +592,7 @@ return (
         </div>
       </div>
       {rangeMode && rangePopupOpen && (
-        <div style={s.rangePopup}>
+        <div className="ge-range-popup" style={s.rangePopup}>
           <div style={s.presetHeader}>Choose range</div>
           <div style={s.presetButtons}>
             <button
@@ -687,11 +693,11 @@ function OverviewSection({ go, ksa, m, heatmaps, comparison, goDaily, user, sele
   const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening'
 
   return (
-    <div style={s.body}>
+    <div className="ge-body" style={s.body}>
 
       {/* Greeting */}
       <div style={{ marginBottom: 28 }}>
-        <div style={s.greetH}>
+        <div className="ge-greet" style={s.greetH}>
           {greeting}, <em style={{ fontStyle: 'italic', fontWeight: 400 }}>{firstName}.</em>
         </div>
         <div style={s.greetCap}>Here's a complete analysis of what happened while you were away.</div>
@@ -706,7 +712,7 @@ function OverviewSection({ go, ksa, m, heatmaps, comparison, goDaily, user, sele
       )}
 
       {/* Row 1 - three metric cards */}
-      <div style={s.threeCol}>
+      <div className="ge-three" style={s.threeCol}>
         <KPICard
           title="Network Uptime"
           value={go.uptime_pct?.toFixed(4) + '%'}
@@ -728,7 +734,7 @@ function OverviewSection({ go, ksa, m, heatmaps, comparison, goDaily, user, sele
       </div>
 
       {/* Row 2 - chart + diagnostics */}
-      <div style={s.twoCol}>
+      <div className="ge-two" style={s.twoCol}>
         <div style={{ ...s.card, ...s.inkCard, display: 'flex', flexDirection: 'column', padding: '22px 24px 18px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
             <div>
@@ -792,7 +798,7 @@ function OverviewSection({ go, ksa, m, heatmaps, comparison, goDaily, user, sele
       </div>
 
       {/* Row 4 - insights + reliability breakdown */}
-      <div style={s.twoCol}>
+      <div className="ge-two" style={s.twoCol}>
         <div style={{ ...s.card, ...s.inkCard, padding: '22px 24px 20px' }}>
           <div style={s.chartTitle}>Auto-Generated Insights</div>
           <div style={{ fontSize: 12, color: '#baad99', marginBottom: 20 }}>
@@ -828,7 +834,7 @@ function OverviewSection({ go, ksa, m, heatmaps, comparison, goDaily, user, sele
 /* ── OTHER SECTIONS - same logic, editorial wrapper ── */
 function BenchmarkSection({ comparison }) {
   return (
-    <div style={s.body}>
+    <div className="ge-body" style={s.body}>
       <div style={{ ...s.card, background: '#EEE8DF', padding: '22px 24px' }}>
         <div style={{ ...s.chartTitle, color: '#1C1813', marginBottom: 4 }}>GO / FTTH vs KSA Average</div>
         <div style={{ fontSize: 15, color: '#9A9088', marginBottom: 20 }}>Full metric comparison</div>
@@ -840,7 +846,7 @@ function BenchmarkSection({ comparison }) {
 
 function HeatmapSection({ heatmaps, selectedDate }) {
   return (
-    <div style={s.body}>
+    <div className="ge-body" style={s.body}>
       <div style={{ ...s.card, background: '#E8DFD0', padding: '22px 24px 20px' }}>
         <div style={s.statSectionLabel}>Hourly Failure Patterns</div>
         <div style={{ ...s.chartTitle, color: '#1C1813', marginBottom: 16 }}>All Categories -- {selectedDate}</div>
@@ -864,10 +870,10 @@ function ReliabilitySection({ go, ksa, heatmaps, dns, trends }) {
   })) : []
 
   return (
-    <div style={s.body}>
+    <div className="ge-body" style={s.body}>
 
       {/* Uptime + disconnections */}
-      <div style={s.twoCol}>
+      <div className="ge-two" style={s.twoCol}>
         <div style={{ ...s.card, background: '#D4B040', padding: '24px' }}>
           <div style={s.statSectionLabel}>Network Uptime</div>
           <div style={{ fontFamily: "'Athene Voyage',serif", fontSize: 52, fontWeight: 700, letterSpacing: '-2px', color: '#1C1813', lineHeight: 1 }}>
@@ -916,7 +922,7 @@ function ReliabilitySection({ go, ksa, heatmaps, dns, trends }) {
 
       {/* DNS detail */}
       {dns && (
-        <div style={s.twoCol}>
+        <div className="ge-two" style={s.twoCol}>
           {[4, 6].map(ver => {
             const d = dns[`v${ver}`]
             if (!d) return null
@@ -983,7 +989,7 @@ function ReliabilitySection({ go, ksa, heatmaps, dns, trends }) {
 
 function CategorySection({ title, metrics }) {
   return (
-    <div style={s.body}>
+    <div className="ge-body" style={s.body}>
       <div style={{ ...s.card, background: '#C2B8DC', padding: '24px' }}>
         <div style={s.statSectionLabel}>{title}</div>
         <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 48, fontWeight: 700, letterSpacing: '-2px', color: '#1C1813', lineHeight: 1, marginTop: 8 }}>
@@ -1006,7 +1012,7 @@ function StrategicSection({ comparison, goDaily }) {
     { priority: 'OG', title: 'SLA Monitoring Pipeline', body: 'Implement continuous active monitoring for top latency-sensitive apps to detect routing shifts proactively.', color: '#9EBD98' },
   ]
   return (
-    <div style={s.body}>
+    <div className="ge-body" style={s.body}>
       <div style={{ ...s.card, ...s.inkCard, padding: '22px 24px', marginBottom: 14 }}>
         <div style={s.chartTitle}>Auto-Generated Insights</div>
         <div style={{ fontSize: 10, color: '#7A7060', fontStyle: 'italic', marginBottom: 20 }}>Based on current dataset</div>
@@ -1029,10 +1035,22 @@ function StrategicSection({ comparison, goDaily }) {
 }
 
 
+// Raw test rows are pruned after RAW_RETENTION_DAYS, so older dates keep their
+// daily totals but lose the per-service breakdown.
+function DetailExpiredNote({ what }) {
+  return (
+    <div style={{ ...s.card, background: '#E8DFD0', padding: '16px 20px', fontSize: 16, lineHeight: 1.4, color: '#1C1813' }}>
+      The {what} breakdown isn't kept for this date. Detailed test results are stored for 90 days;
+      the daily totals below are kept for good. Pick a more recent date to see the full breakdown.
+    </div>
+  )
+}
+
 /* ── GAMING SECTION ── */
 function GamingSection({ metrics, breakdown, selectedDate }) {
   const games = breakdown?.games || []
   const providers = breakdown?.providers || []
+  const narrow = useIsNarrow()
 
   // Sort by latency (highest first) for the chart
   const top10highest = [...games]
@@ -1044,10 +1062,11 @@ function GamingSection({ metrics, breakdown, selectedDate }) {
   const sortedGames = [...games].sort((a, b) => (a.rtt_avg_ms || 0) - (b.rtt_avg_ms || 0))
 
   return (
-    <div style={s.body}>
+    <div className="ge-body" style={s.body}>
+      {breakdown && games.length === 0 && <DetailExpiredNote what="per-title" />}
 
       {/* Header KPIs */}
-      <div style={s.threeCol}>
+      <div className="ge-three" style={s.threeCol}>
         <div style={{ ...s.card, background: '#D4B040', padding: '20px 22px' }}>
           <div style={s.statSectionLabel}>Overall Reliability</div>
           <div style={{ fontFamily: "'Athene Voyage',serif", fontSize: 42, fontWeight: 700, letterSpacing: '-1px', color: '#1C1813' }}>
@@ -1086,7 +1105,7 @@ function GamingSection({ metrics, breakdown, selectedDate }) {
               <BarChart 
                 data={top10highest} 
                 layout="vertical" 
-                margin={{ left: 100, right: 20, top: 4, bottom: 4 }}
+                margin={{ left: narrow ? 0 : 100, right: narrow ? 12 : 20, top: 4, bottom: 4 }}
               >
                 <CartesianGrid strokeDasharray="2 2" stroke="rgba(238,232,223,0.08)" horizontal={false} />
                 <XAxis 
@@ -1098,11 +1117,11 @@ function GamingSection({ metrics, breakdown, selectedDate }) {
                 />
                 <YAxis 
                   type="category" 
-                  dataKey="app_name" 
-                  tick={{ fontSize: 15, fill: '#9A8E7E' }} 
-                  axisLine={false} 
-                  tickLine={false} 
-                  width={95}
+                  dataKey="app_name"
+                  tick={{ fontSize: narrow ? 12 : 15, fill: '#9A8E7E' }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={narrow ? 104 : 95}
                 />
                 <Tooltip
                   contentStyle={{ background: '#EEE8DF', border: '2px solid #1C1813', borderRadius: 4, fontSize: 11 }}
@@ -1301,10 +1320,11 @@ function SocialSection({ metrics, breakdown, selectedDate }) {
   }
 
   return (
-    <div style={s.body}>
+    <div className="ge-body" style={s.body}>
+      {breakdown && services.length === 0 && <DetailExpiredNote what="per-app" />}
 
       {/* Header KPIs */}
-      <div style={s.threeCol}>
+      <div className="ge-three" style={s.threeCol}>
         <div style={{ ...s.card, background: '#D4B040', padding: '20px 22px' }}>
           <div style={s.statSectionLabel}>Overall Reliability</div>
           <div style={{ fontFamily: "'Athene Voyage',serif", fontSize: 42, fontWeight: 700, letterSpacing: '-1px', color: '#1C1813' }}>
@@ -1425,7 +1445,7 @@ function SocialSection({ metrics, breakdown, selectedDate }) {
       )}
 
 {/* CDN vs Non-CDN endpoint table */}
-<div style={s.twoCol}>
+<div className="ge-two" style={s.twoCol}>
   <div style={{ ...s.card, background: '#9EBD98', padding: '20px 22px' }}>
     <div style={{ ...s.chartTitle, color: '#1C1813', marginBottom: 4 }}>CDN Optimised Endpoints</div>
     <div style={{ fontSize: 12, color: '#1C1813', opacity: 0.6, fontStyle: 'italic', marginBottom: 14 }}>
@@ -1619,10 +1639,11 @@ function VideoSection({ metrics, breakdown, selectedDate }) {
   const worst = serviceAvgs[serviceAvgs.length - 1]
 
   return (
-    <div style={s.body}>
+    <div className="ge-body" style={s.body}>
+      {breakdown && platforms.length === 0 && <DetailExpiredNote what="per-platform" />}
 
       {/* Header KPIs */}
-      <div style={s.threeCol}>
+      <div className="ge-three" style={s.threeCol}>
         <div style={{ ...s.card, background: '#C2B8DC', padding: '20px 22px' }}>
           <div style={s.statSectionLabel}>Overall Reliability</div>
           <div style={{ fontFamily: "'Athene Voyage',serif", fontSize: 42, fontWeight: 700, letterSpacing: '-1px', color: '#1C1813' }}>

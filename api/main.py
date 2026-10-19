@@ -684,7 +684,7 @@ def get_scopes(  current_user: User = Depends(get_current_user) ):
         session.close()
 
 @app.get("/api/dates")
-def get_available_dates(  current_user: User = Depends(get_current_user) ):
+def get_db_dates(  current_user: User = Depends(get_current_user) ):
     session = SessionLocal()
     try:
         from sqlalchemy import distinct

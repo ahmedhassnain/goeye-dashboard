@@ -29,10 +29,11 @@ const NAV = [
   },
 ]
 
-export default function Sidebar({ active, onNavigate, user, onLogout }) {
+export default function Sidebar({ active, open, onClose, onNavigate, user, onLogout }) {
   return (
-    <aside style={s.sidebar}>
+    <aside className={`ge-sidebar${open ? ' is-open' : ''}`} style={s.sidebar}>
       <div style={s.logo}>GoEye</div>
+      <button type="button" className="ge-drawer-close" onClick={onClose} aria-label="Close navigation">Close</button>
 
       <nav style={s.nav}>
         {NAV.map(section => (

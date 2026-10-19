@@ -7,11 +7,12 @@ export default function ReliabilityChart({ dailyData }) {
   const data = [
     { category: 'Games',    value: m['Games']?.reliability_pct },
     { category: 'Social',   value: m['Social Media']?.reliability_pct },
-    { category: 'Video Conf.',    value: m['Video Conferencing']?.reliability_pct },
+    { category: 'Video',    value: m['Video Conferencing']?.reliability_pct },
     { category: 'Combined', value: m['Combined']?.weighted_reliability_pct },
   ].filter(d => d.value != null)
 
-  const minVal = Math.max(0, Math.min(...data.map(d => d.value)) - 3)
+  // Whole-number floor keeps the axis ticks short (e.g. 96% rather than 95.8793%)
+  const minVal = Math.max(0, Math.floor(Math.min(...data.map(d => d.value)) - 3))
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -21,12 +22,13 @@ export default function ReliabilityChart({ dailyData }) {
           dataKey="category"
           tick={{ fontSize: 14, fill: '#9A8E7E', fontFamily: 'Athene Voyage' }}
           axisLine={false} tickLine={false}
+          interval={0}
         />
         <YAxis
           domain={[minVal, 100]}
           tick={{ fontSize: 12, fill: '#5A5248', fontFamily: 'Athene Voyage' }}
           axisLine={false} tickLine={false}
-          tickFormatter={v => `${v}%`}
+          tickFormatter={v => `${Number(v.toFixed(1))}%`}
         />
         <Tooltip
           cursor={{ fill: 'rgba(238,232,223,0.06)' }}
