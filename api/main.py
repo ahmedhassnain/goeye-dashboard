@@ -436,31 +436,31 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
         ).first()
 
         if not user:
-            print(f"❌ User not found: {form_data.username}")
+            print(f"[FAIL] User not found: {form_data.username}")
             raise HTTPException(
                 status_code=401,
                 detail="Incorrect username or password"
             )
 
-        print(f"✅ User found: {user.username}")
+        print(f"[OK] User found: {user.username}")
         print(f"Hash type: {'bcrypt' if user.hashed_password.startswith('$2b$') else 'other'}")
 
         is_valid = verify_password(form_data.password, user.hashed_password)
         print(f"Password valid: {is_valid}")
 
         if not is_valid:
-            print(f"❌ Invalid password")
+            print(f"[FAIL] Invalid password")
             raise HTTPException(
                 status_code=401,
                 detail="Incorrect username or password"
             )
 
         if not user.is_active:
-            print(f"❌ User inactive")
+            print(f"[FAIL] User inactive")
             raise HTTPException(status_code=401, detail="Account is disabled")
 
         token = create_access_token({"sub": user.username})
-        print(f"✅ Login successful, token generated")
+        print(f"[OK] Login successful, token generated")
         print(f"=== END LOGIN ===\n")
 
         return TokenResponse(
@@ -540,7 +540,7 @@ def _get_load_status_for_date(date_str: str):
 
 
 @app.post("/api/load-date/{date_str}")
-def load_date(date_str: str):
+def load_date(date_str: str, current_user: User = Depends(get_current_user)):
     """Download and process a specific archive date on demand."""
     date_str = normalize_date_str(date_str)
 
@@ -592,7 +592,7 @@ class LoadDatesRequest(BaseModel):
 
 
 @app.post("/api/load-dates")
-def load_dates(request: LoadDatesRequest):
+def load_dates(request: LoadDatesRequest, current_user: User = Depends(get_current_user)):
     dates = request.dates
     if not dates:
         raise HTTPException(status_code=400, detail="No dates provided")
