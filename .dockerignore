@@ -1,0 +1,25 @@
+# Local environments and secrets
+venv/
+env/
+.venv/
+.env
+.dev.vars
+
+# Pipeline working data
+raw/
+staging/
+*.log
+samknows_sim/archives/
+
+# Not needed by the API
+frontend/
+node_modules/
+.git/
+.github/
+.idea/
+.wrangler/
+__pycache__/
+*.pyc
+docs/
+*.tar.gz
+Units_Data.csv
