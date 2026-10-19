@@ -44,9 +44,9 @@ jobs:
     outputs:
       dates: ${{ steps.dates.outputs.dates }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
 
@@ -74,7 +74,7 @@ jobs:
             python samknows_sim/generate_archive.py --date "${d:0:4}-${d:4:2}-${d:6:2}" --out samknows_sim/archives
           done
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
 
@@ -101,9 +101,9 @@ jobs:
       RAW_RETENTION_DAYS: "90"
       PYTHONIOENCODING: utf-8
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: pip

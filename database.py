@@ -17,10 +17,14 @@ if not DATABASE_URL:
     DB_PASS = os.getenv("DB_PASS")
     DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
+# Neon's pooled endpoints (host contains "-pooler") reject startup options, and
+# public is already the default schema there, so only pin it on direct connections.
+connect_args = {} if "-pooler." in DATABASE_URL else {"options": "-csearch_path=public"}
+
 engine = create_engine(
     DATABASE_URL,
     echo=False,
-    connect_args={"options": "-csearch_path=public"},
+    connect_args=connect_args,
 )
 
 SessionLocal = sessionmaker(bind=engine)
