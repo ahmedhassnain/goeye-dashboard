@@ -6,7 +6,7 @@ compatibility_date = "2025-09-01"
 # then paste the printed id below (it is an identifier, not a secret).
 [[kv_namespaces]]
 binding = "ARCHIVES"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "a910554c73ee4731aa47be38bbc88596"
 
 # Secrets (not stored here):
 #   npx wrangler secret put SAMKNOWS_USER
