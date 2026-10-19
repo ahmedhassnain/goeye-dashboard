@@ -30,10 +30,10 @@ export default function LoginPage({ onLogin }) {
   }
 
   return (
-    <div style={s.page}>
+    <div className="ge-login" style={s.page}>
 
       {/* ── Left Panel ── */}
-      <div style={s.leftPanel}>
+      <div className="ge-login-left" style={s.leftPanel}>
         <svg style={s.decorSvg} viewBox="0 0 700 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
           <defs>
             <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -60,11 +60,11 @@ export default function LoginPage({ onLogin }) {
         </svg>
 
         <div style={s.leftTop}>
-          <div style={s.brandName}>GoEye</div>
+          <div className="ge-login-brand" style={s.brandName}>GoEye</div>
         </div>
 
         <div style={s.leftBottom}>
-          <div style={s.brandSub}>
+          <div className="ge-login-brandsub" style={s.brandSub}>
             One-Stop Dashboard<br />
             for all Go Telecom Data.
           </div>
@@ -72,15 +72,15 @@ export default function LoginPage({ onLogin }) {
       </div>
 
       {/* ── Right Panel ── */}
-      <div style={s.rightPanel}>
+      <div className="ge-login-right" style={s.rightPanel}>
         <div style={s.cardWrapper}>
           {/* Shadow card – sits behind, offset down-left */}
           <div style={s.cardBack} />
 
           {/* Front card */}
-          <div style={s.cardFront}>
-            <div style={s.welcomeText}>Welcome Back</div>
-            <div style={s.subText}>
+          <div className="ge-login-card" style={s.cardFront}>
+            <div className="ge-login-welcome" style={s.welcomeText}>Welcome Back</div>
+            <div className="ge-login-sub" style={s.subText}>
               Please proceed to login with your credentials.
             </div>
             <div style={s.divider} />

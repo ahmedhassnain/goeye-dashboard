@@ -1,0 +1,104 @@
+/* Responsive layer.
+   The app is styled with inline styles; these rules only kick in below the
+   breakpoints, so they use !important to override the inline desktop values.
+   Breakpoints: 860px = sidebar becomes a drawer, 640px = single-column phone. */
+
+/* Elements that only exist on small screens */
+.ge-menu-btn,
+.ge-drawer-close,
+.ge-backdrop { display: none; }
+
+/* The top pill wraps instead of clipping when the controls don't fit */
+.ge-topbar { flex-wrap: wrap; row-gap: 10px; column-gap: 16px; }
+.ge-topbar-right { flex-wrap: wrap; row-gap: 8px; }
+
+:focus-visible { outline: 3px solid #EDCA0F; outline-offset: 2px; }
+
+/* ── Tablet and below: sidebar becomes a drawer ─────────────────────────── */
+@media (max-width: 860px) {
+  .ge-main { margin-left: 0 !important; }
+
+  .ge-sidebar {
+    width: min(280px, 82vw) !important;
+    transform: translateX(-105%);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    border-right: 3px solid #1C1813;
+    z-index: 300 !important;
+  }
+  .ge-sidebar.is-open {
+    transform: translateX(0);
+    box-shadow: 8px 0 0 #1C1813;   /* hard offset, same idea as the stacked cards */
+  }
+  .ge-sidebar button { padding-top: 9px !important; padding-bottom: 9px !important; font-size: 17px !important; }
+
+  .ge-drawer-close {
+    display: block;
+    position: absolute; top: 22px; right: 16px;
+    font-family: 'Athene Voyage', serif; font-size: 14px;
+    color: #1C1813; background: #EEE8DF;
+    border: 2px solid #EEE8DF; border-radius: 14px;
+    padding: 4px 12px; cursor: pointer;
+  }
+
+  .ge-backdrop {
+    display: block;
+    position: fixed; inset: 0; z-index: 250;
+    background: rgba(238, 232, 223, 0.7);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .ge-backdrop.is-open { opacity: 1; pointer-events: auto; }
+
+  .ge-menu-btn {
+    display: inline-block;
+    font-family: 'Athene Voyage', serif; font-size: 14px; font-weight: 700;
+    color: #EEE8DF; background: #1C1813;
+    border: 2px solid #1C1813; border-radius: 14px;
+    padding: 6px 14px; cursor: pointer;
+  }
+
+  .ge-topbar-wrap { padding: 12px 0 !important; }
+  .ge-topbar {
+    margin: 0 12px !important;
+    padding: 12px 16px !important;
+    border-radius: 26px !important;
+    opacity: 1 !important;
+  }
+  .ge-topbar-title { display: flex; align-items: center; gap: 12px; font-size: 22px !important; }
+
+  .ge-range-popup {
+    top: auto !important; bottom: 12px !important;
+    left: 12px !important; right: 12px !important;
+    width: auto !important; max-width: none !important;
+  }
+
+  .ge-body { padding: 16px 16px 32px !important; }
+  .ge-greet { font-size: 56px !important; letter-spacing: -1px !important; }
+}
+
+/* ── Phone: one column ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .ge-three, .ge-two { grid-template-columns: 1fr !important; }
+
+  .ge-topbar-right { width: 100%; gap: 8px !important; }
+  .ge-topbar-right > * { font-size: 14px !important; }
+
+  .ge-greet { font-size: 42px !important; }
+
+  /* Wide tables scroll sideways inside their card instead of stretching the page */
+  .ge-body table { display: block; overflow-x: auto; white-space: nowrap; }
+
+  /* Login: mustard panel becomes a banner above the card */
+  .ge-login { flex-direction: column !important; height: auto !important; min-height: 100vh; overflow: visible !important; }
+  .ge-login-left { flex: 0 0 auto !important; min-height: 200px; padding: 28px 24px !important; }
+  .ge-login-right { padding: 32px 20px 48px !important; align-items: flex-start !important; }
+  .ge-login-card { padding: 28px 24px 30px !important; }
+  .ge-login-welcome { font-size: 32px !important; }
+  .ge-login-sub { font-size: 20px !important; }
+  .ge-login-brand { font-size: 52px !important; }
+  .ge-login-brandsub { font-size: 24px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ge-sidebar, .ge-backdrop { transition: none; }
+}
