@@ -1,215 +1,146 @@
-# GoEye - Network Analytics Dashboard
+<p align="center">
+  <img src="docs/readme/hero.png" width="100%" alt="GoEye. Good morning. Last night's network tests are in. Here's how gaming, social, video and DNS held up.">
+</p>
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://goeye-dashboard.vercel.app)
-[![Backend](https://img.shields.io/badge/API-Render-46E3B7?style=for-the-badge&logo=render)](https://goeye-backend.onrender.com)
-[![Python](https://img.shields.io/badge/Python-3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.135-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+GoEye is the dashboard I built for Go Telecom to watch home internet quality across
+Saudi Arabia. Small test units in subscribers' homes check the connection all day:
+game servers, Instagram and TikTok, Zoom and Teams calls, DNS lookups, dropouts.
+GoEye collects those results overnight and turns them into one page that tells you
+how the night went, and how GO's fibre compares with the KSA average.
 
-A full-stack **Quality of Service (QoS) analytics platform** built for Go Telecom (Saudi Arabia). GoEye aggregates network measurement data from subscriber-premises units and surfaces it through an interactive analytics dashboard which covers gaming latency, social media responsiveness, video conferencing quality, CDN performance, and DNS reliability across multiple operator scopes.
+This public copy runs on made-up data. The original read SamKnows measurement
+exports; this one reads from a stand-in server I built that publishes a fresh,
+realistic archive every night. No real subscriber data is in this repo.
 
-> **Portfolio note:** This public version runs entirely on synthetic seeded data. No SamKnows credentials or real subscriber data are included.
+<p>
+  <a href="https://goeye-dashboard.vercel.app"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/live-demo-dark.png"><img src="docs/readme/live-demo.png" width="300" alt="Open the live demo"></picture></a>
+</p>
 
----
+Sign in with `demo` and password `demo1234`. The backend runs on a free tier, so the
+first sign-in can take up to a minute while it wakes up.
 
-## Live Demo
+## What's on the dashboard
 
-| URL | Credentials |
-|-----|-------------|
-| [goeye-dashboard.vercel.app](https://goeye-dashboard.vercel.app) | Username: `demo` · Password: `demo1234` |
+<img src="docs/readme/dashboard-overview.png" width="100%" alt="GoEye overview page: uptime, weighted reliability and video call reliability tiles, a reliability-by-category chart and a network diagnostics panel">
 
-> The backend is hosted on Render's free tier and may take ~30 seconds to wake from cold start on first login.
+- **Overview**: uptime, reliability and video call reliability for the day, each
+  compared with the national average, plus DNS health and disconnections.
+- **Benchmark**: GO fibre side by side with the STC and Mobily KSA average.
+- **Gaming**: latency to 29 game services, from Valorant to Honor of Kings.
+- **Social media**: response times per app, split into CDN and origin servers.
+- **Video calls**: Zoom, Teams, Google Meet and Webex.
+- **Reliability and heatmaps**: failure rate for every hour of the day, so evening
+  slowdowns are easy to spot.
+- **Recommendations**: plain-language notes on what's weakest and what to look at.
 
----
+Pick a single day or a date range in the top bar. Dates that are on the test server
+but not loaded yet can be pulled in from there too.
 
-## Features
+<img src="docs/readme/dashboard-heatmaps.png" width="100%" alt="Hourly failure heatmaps for games, social media, video calls and disconnections">
 
-- **JWT Authentication** - role-based access with 8-hour session tokens; credentials never stored in localStorage
-- **Multi-scope comparison** - side-by-side KPI comparison across operator/technology segments (GO/FTTH, GO/B2B, KSA Average)
-- **Gaming latency tracking** - per-game RTT trends for 28 titles (Valorant, League of Legends, PUBG, and more)
-- **Social media breakdown** - per-platform latency with CDN vs. origin endpoint distinction
-- **Video conferencing quality** - RTT analysis across conferencing platforms
-- **DNS performance** - resolver response-time detail
-- **Disconnection monitoring** - reliability heatmap by hour of day
-- **Date range picker** - load any single date or a custom range from the DB; union with live server dates when pipeline is active
-- **Trend analysis** - 30-day rolling trends per scope
-- **ETL pipeline** - production-ready downloader → extractor → parser → aggregator pipeline (SamKnows-compatible, dormant in demo mode)
+## How the data gets here
 
----
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/data-flow-dark.png">
+  <img src="docs/readme/data-flow.png" width="100%" alt="Test server, then pipeline, then aggregates, then Postgres, then the dashboard. GitHub Actions runs the chain at 03:30 Riyadh time every night.">
+</picture>
 
-## Tech Stack
+The pipeline is the same one that ran against SamKnows: it lists the archives on the
+server, downloads the new one, unpacks the CSVs, loads around 5,200 test results and
+rolls them up into daily and hourly numbers per operator. How the stand-in server
+and its fake data work is written up in [samknows_sim/README.md](samknows_sim/README.md).
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 19, Vite, Recharts, react-heatmap-grid, Axios |
-| Backend | FastAPI, SQLAlchemy 2, python-jose (JWT), passlib (bcrypt) |
-| Database | PostgreSQL 16 (Neon serverless in production) |
-| Pipeline | pandas, NumPy, BeautifulSoup4, requests |
-| Hosting | Vercel (frontend) · Render (backend) · Neon (database) |
+## Run it yourself
 
----
+You'll need Python 3.11+, Node 20+ and a PostgreSQL database (a free
+[Neon](https://neon.tech) project works).
 
-## Architecture
+1. Clone the repo and create your `.env`:
+
+   ```bash
+   git clone https://github.com/ahmedhassnain/goeye-dashboard.git
+   cd goeye-dashboard
+   cp .env.example .env
+   ```
+
+   Fill in the database details, and set `JWT_SECRET` to the output of:
+
+   ```bash
+   python -c "import secrets; print(secrets.token_hex(32))"
+   ```
+
+2. Set up the backend and load the demo data:
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate          # Windows: .\venv\Scripts\Activate.ps1
+   pip install -r requirements.txt
+   python create_tables.py
+   python seed_demo_data.py          # 14 days of data and the demo / demo1234 account
+   uvicorn api.main:app --reload --port 8001
+   ```
+
+   The API docs are at http://localhost:8001/docs.
+
+3. Start the front end. Create `frontend/.env.local` containing
+   `VITE_API_URL=http://localhost:8001`, then:
+
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+   Open http://localhost:5173 and sign in.
+
+4. Optional: run the nightly pipeline locally against a fake test server.
+
+   ```bash
+   python samknows_sim/generate_archive.py --days 14
+   python samknows_sim/serve_local.py --user demo --password demo
+   ```
+
+   The second command keeps running, so use another terminal for the rest. Add
+   `SAMKNOWS_URL=http://127.0.0.1:8765/`, `SAMKNOWS_USER=demo` and
+   `SAMKNOWS_PASS=demo` to `.env`, then run `python pipeline/run_pipeline.py --days 14`.
+
+## Built with
+
+| Part | Tools |
+|---|---|
+| Front end | React 19, Vite, Recharts, Axios |
+| Back end | FastAPI, SQLAlchemy 2, JWT sign-in with bcrypt passwords |
+| Data | PostgreSQL on Neon, pandas and NumPy for the pipeline |
+| Hosting | Vercel, Render, Cloudflare Workers, GitHub Actions |
+
+## Where things live
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                        Browser                          │
-│              React 19 + Vite (Vercel)                   │
-└──────────────────────┬──────────────────────────────────┘
-                       │  HTTPS / JWT in Authorization header
-┌──────────────────────▼──────────────────────────────────┐
-│               FastAPI Backend (Render)                   │
-│  /auth/login   /api/daily   /api/hourly                 │
-│  /api/gaming/breakdown      /api/social/breakdown        │
-│  /api/available-dates       /api/loaded-dates            │
-└──────────────────────┬──────────────────────────────────┘
-                       │  SQLAlchemy ORM
-┌──────────────────────▼──────────────────────────────────┐
-│             PostgreSQL - Neon (cloud)                    │
-│  units · scopes · scope_units · applications            │
-│  daily_aggregates · hourly_aggregates                   │
-│  raw_game_latency · raw_social_media                    │
-│  raw_video_conferencing · raw_dns · users               │
-└─────────────────────────────────────────────────────────┘
-
-Optional (production pipeline - not active in demo):
-┌─────────────────────────────────────────────────────────┐
-│  SamKnows Measurement Server                            │
-│  downloader → extractor → parsers → aggregators         │
-│  Scheduled nightly via Windows Task Scheduler           │
-└─────────────────────────────────────────────────────────┘
+api/main.py                 every API endpoint
+pipeline/                   download, run and prune the nightly data
+parsers/                    one parser per test type, CSV into raw tables
+aggregations/               raw tables into daily and hourly numbers
+models/                     database tables
+samknows_sim/               the stand-in SamKnows server and data generator
+.github/workflows/          the nightly publish-and-load job
+frontend/src/pages/         Login and Dashboard
+frontend/src/components/    charts, tiles, heatmaps, insights
+seed_demo_data.py           demo units, scopes, account and 14 days of data
 ```
 
----
+## Deploying
 
-## Project Structure
+Everything runs on free tiers. Each service needs these settings:
 
-```
-gonet-dashboard-v1-portfolio/
-├── api/
-│   └── main.py                  # FastAPI app - all endpoints
-├── models/                      # SQLAlchemy ORM models
-│   ├── units.py
-│   ├── scopes.py
-│   ├── scope_units.py
-│   ├── applications.py
-│   ├── daily_aggregates.py
-│   ├── hourly_aggregates.py
-│   ├── raw_game_latency.py
-│   ├── raw_social_media.py
-│   ├── raw_video_conferencing.py
-│   ├── raw_dns.py
-│   └── users.py
-├── pipeline/                    # ETL pipeline (dormant in demo)
-│   ├── downloader.py
-│   ├── extractor.py
-│   ├── run_pipeline.py
-│   └── parsers/
-├── frontend/
-│   ├── src/
-│   │   ├── api/client.js        # Axios client + interceptors
-│   │   ├── pages/
-│   │   │   ├── Login.jsx
-│   │   │   └── Dashboard.jsx
-│   │   └── components/
-│   │       ├── Sidebar.jsx
-│   │       ├── KPICard.jsx
-│   │       ├── Panel.jsx
-│   │       ├── HeatmapPanel.jsx
-│   │       ├── ReliabilityChart.jsx
-│   │       ├── ComparisonTable.jsx
-│   │       └── InsightsPanel.jsx
-│   └── package.json
-├── database.py                  # SQLAlchemy engine (DATABASE_URL or individual vars)
-├── create_tables.py             # Schema creation script
-├── load_reference_data.py       # Seed units, scopes, applications
-├── seed_demo_data.py            # 14 days of synthetic QoS data
-├── create_user.py               # User account creation utility
-├── requirements.txt
-├── Procfile                     # Render start command
-└── .env.example                 # Environment variable reference
-```
+| Service | Settings |
+|---|---|
+| Neon (database) | Nothing beyond creating the project; copy its connection string |
+| Render (API) | `DATABASE_URL`, `JWT_SECRET`, and `SAMKNOWS_URL`, `SAMKNOWS_USER`, `SAMKNOWS_PASS` to load server dates from the dashboard |
+| Vercel (front end) | `VITE_API_URL`, pointing at the API |
+| GitHub Actions (nightly data) | See [samknows_sim/README.md](samknows_sim/README.md#one-time-cloud-setup-free-tier-no-card-needed) |
 
----
-
-## Local Development
-
-### Prerequisites
-- Python 3.11+
-- Node.js 20+
-- PostgreSQL 14+ (or a free [Neon](https://neon.tech) project)
-
-### 1. Clone and configure
-
-```bash
-git clone https://github.com/YOUR_USERNAME/gonet-dashboard-v1-portfolio.git
-cd gonet-dashboard-v1-portfolio
-
-cp .env.example .env
-# Edit .env - fill in your DB connection details and generate a JWT_SECRET
-```
-
-Generate a JWT secret:
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
-```
-
-### 2. Backend
-
-```bash
-python -m venv venv
-.\venv\Scripts\Activate.ps1      # Windows
-# source venv/bin/activate       # macOS / Linux
-
-pip install -r requirements.txt
-
-python create_tables.py
-python load_reference_data.py    # requires Units_Data.csv in project root
-python seed_demo_data.py
-python create_user.py
-
-uvicorn api.main:app --reload --port 8001
-```
-
-API is available at `http://localhost:8001` - interactive docs at `/docs`.
-
-### 3. Frontend
-
-```bash
-cd frontend
-npm install
-# Create frontend/.env.local with:
-# VITE_API_URL=http://localhost:8001
-npm run dev
-```
-
-Dashboard opens at `http://localhost:5173`.
-
----
-
-## Deployment
-
-The stack deploys entirely on free tiers:
-
-| Service | Purpose | Free tier limits |
-|---------|---------|-----------------|
-| [Neon](https://neon.tech) | PostgreSQL database | 512 MB storage, 1 project |
-| [Render](https://render.com) | FastAPI backend | 750 hrs/month, cold-starts after 15 min inactivity |
-| [Vercel](https://vercel.com) | React frontend | Unlimited deployments |
-
-See [`.env.example`](.env.example) for all required environment variables.
-
-**Render environment variables required:**
-- `DATABASE_URL` - Neon connection string
-- `JWT_SECRET` - 32+ character random string
-
-**Vercel environment variable required:**
-- `VITE_API_URL` - your Render backend URL
-
----
+[`.env.example`](.env.example) lists every variable with a short note.
 
 ## License
 
-[MIT](LICENSE) - Ahmed Hassnain, 2026
+[MIT](LICENSE). Built by Ahmed Hassnain, 2026.
