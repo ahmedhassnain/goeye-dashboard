@@ -111,7 +111,7 @@ You'll need Python 3.11+, Node 20+ and a PostgreSQL database (a free
 | Front end | React 19, Vite, Recharts, Axios |
 | Back end | FastAPI, SQLAlchemy 2, JWT sign-in with bcrypt passwords |
 | Data | PostgreSQL on Neon, pandas and NumPy for the pipeline |
-| Hosting | Vercel, Koyeb, Cloudflare Workers, GitHub Actions |
+| Hosting | Vercel, Render, cron-job.org, Cloudflare Workers, GitHub Actions |
 
 ## Where things live
 
@@ -135,14 +135,14 @@ Everything runs on free tiers. Each service needs these settings:
 | Service | Settings |
 |---|---|
 | Neon (database) | Nothing beyond creating the project; copy its connection string |
-| Koyeb (API) | Free web service built from the [Dockerfile](Dockerfile), port 7860. Variables: `DATABASE_URL`, `JWT_SECRET`, `RAW_RETENTION_DAYS`, and `SAMKNOWS_URL`, `SAMKNOWS_USER`, `SAMKNOWS_PASS` to load server dates from the dashboard. Steps in [docs/deploy-koyeb.md](docs/deploy-koyeb.md) |
-| Vercel (front end) | `VITE_API_URL`, pointing at the API's Koyeb URL; redeploy after changing it |
-| GitHub Actions (keep-alive) | Repository variable `BACKEND_URL`; [keep-alive.yml](.github/workflows/keep-alive.yml) pings `/docs` every 20 minutes so the free instance never reaches its 1-hour sleep |
+| Render (API) | Free web service started from the [Procfile](Procfile). Variables: `DATABASE_URL`, `JWT_SECRET`, `RAW_RETENTION_DAYS`, and `SAMKNOWS_URL`, `SAMKNOWS_USER`, `SAMKNOWS_PASS` to load server dates from the dashboard. Steps in [docs/deploy-render.md](docs/deploy-render.md) |
+| Vercel (front end) | `VITE_API_URL`, pointing at the API's Render URL; redeploy after changing it |
+| cron-job.org (keep-alive) | A job that requests the API's `/docs` every 10 minutes so Render's free tier never reaches its 15-minute sleep. [keep-alive.yml](.github/workflows/keep-alive.yml) does the same from GitHub Actions as a backup once the `BACKEND_URL` repository variable is set |
 | GitHub Actions (nightly data) | See [samknows_sim/README.md](samknows_sim/README.md#one-time-cloud-setup-free-tier-no-card-needed) |
 
 [`.env.example`](.env.example) lists every variable with a short note.
 
-Render still works as a fallback for the API, using the `Procfile` and the same variables. Its free tier sleeps after 15 minutes, so point `BACKEND_URL` at it and ping every 10 minutes; see [the fallback notes](docs/deploy-koyeb.md#fallback-render).
+The repo also has a [Dockerfile](Dockerfile) for moving the API to a Docker host later; see [docs/deploy-render.md](docs/deploy-render.md#moving-to-a-docker-host-later).
 
 ## License
 

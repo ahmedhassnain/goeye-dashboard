@@ -1,4 +1,4 @@
-# GoEye API image (deployed on Koyeb; works on any Docker host).
+# GoEye API image for Docker hosts (the live API runs on Render via the Procfile).
 # Listens on $PORT when the platform sets it, otherwise 7860.
 FROM python:3.13-slim
 
