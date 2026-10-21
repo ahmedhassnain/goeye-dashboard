@@ -16,8 +16,9 @@ realistic archive every night. No real subscriber data is in this repo.
   <a href="https://goeye-dashboard.vercel.app"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/live-demo-dark.png"><img src="docs/readme/live-demo.png" width="300" alt="Open the live demo"></picture></a>
 </p>
 
-Sign in with `demo` and password `demo1234`. The backend runs on a free tier, so the
-first sign-in can take up to a minute while it wakes up.
+Sign in with `demo` and password `demo1234`. The backend runs on a free tier and is
+kept awake, so it normally answers straight away; if it has been asleep, the first
+sign-in can take up to a minute.
 
 ## What's on the dashboard
 
@@ -49,10 +50,12 @@ The pipeline is the same one that ran against SamKnows: it lists the archives on
 server, downloads the new one, unpacks the CSVs, loads around 5,200 test results and
 rolls them up into daily and hourly numbers per operator. How the stand-in server
 and its fake data work is written up in [samknows_sim/README.md](samknows_sim/README.md).
+The job is scheduled for 03:30, but GitHub sometimes starts scheduled jobs a few hours
+late, so the new day can land later in the morning.
 
 ## Run it yourself
 
-You'll need Python 3.11+, Node 20+ and a PostgreSQL database (a free
+You'll need Python 3.11+, Node 20.19+ (or 22.12+) and a PostgreSQL database (a free
 [Neon](https://neon.tech) project works).
 
 1. Clone the repo and create your `.env`:
@@ -122,7 +125,7 @@ parsers/                    one parser per test type, CSV into raw tables
 aggregations/               raw tables into daily and hourly numbers
 models/                     database tables
 samknows_sim/               the stand-in SamKnows server and data generator
-.github/workflows/          the nightly publish-and-load job
+.github/workflows/          the nightly publish-and-load job and the keep-alive ping
 frontend/src/pages/         Login and Dashboard
 frontend/src/components/    charts, tiles, heatmaps, insights
 seed_demo_data.py           demo units, scopes, account and 14 days of data
